@@ -5,6 +5,9 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const documentRoutes = require("./routes/documentRoutes");
+const signatureRoutes = require(
+  "./routes/signatureRoutes"
+);
 
 dotenv.config();
 
@@ -28,7 +31,7 @@ app.get("/", (req, res) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/docs", documentRoutes);
-
+app.use("/api/signatures", signatureRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;

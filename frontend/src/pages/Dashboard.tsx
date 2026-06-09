@@ -15,21 +15,50 @@ interface DocumentData {
   fileSize: number;
 }
 
+interface Signature {
+  _id?: string;
+  fileId: string;
+  x: number;
+  y: number;
+}
+
 function Dashboard() {
   const [docs, setDocs] = useState<DocumentData[]>([]);
+  const [signatures, setSignatures] = useState<Signature[]>([]);
   const [numPagesMap, setNumPagesMap] = useState<{
     [key: string]: number;
   }>({});
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/docs")
-      .then((res) => {
-        setDocs(res.data);
-      })
-      .catch((error) => {
-        console.log("Error fetching documents:", error);
-      });
+    const fetchData = async () => {
+      try {
+        const docsRes = await axios.get(
+          "http://localhost:5000/api/docs"
+        );
+
+        setDocs(docsRes.data);
+
+        const allSignatures: Signature[] = [];
+
+        for (const doc of docsRes.data as DocumentData[]) {
+          try {
+            const sigRes = await axios.get(
+              `http://localhost:5000/api/signatures/${doc._id}`
+            );
+
+            allSignatures.push(...sigRes.data);
+          } catch (err) {
+            console.error(err);
+          }
+        }
+
+        setSignatures(allSignatures);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleLoadSuccess = (
@@ -40,6 +69,40 @@ function Dashboard() {
       ...prev,
       [docId]: numPages,
     }));
+  };
+
+  const handlePdfClick = async (
+    e: React.MouseEvent<HTMLDivElement>,
+    fileId: string
+  ) => {
+    const rect =
+      e.currentTarget.getBoundingClientRect();
+
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/signatures",
+        {
+          fileId,
+          signer: "shivam@gmail.com",
+          x,
+          y,
+          status: "pending",
+        }
+      );
+
+      setSignatures((prev) => [
+        ...prev,
+        response.data,
+      ]);
+    } catch (error) {
+      console.error(
+        "Error saving signature:",
+        error
+      );
+    }
   };
 
   return (
@@ -74,7 +137,15 @@ function Dashboard() {
                 Open PDF in New Tab
               </a>
 
-              <div className="mt-4 border p-2 overflow-auto">
+              <div
+                className="mt-4 border p-2 overflow-auto relative"
+                onClick={(e) =>
+                  handlePdfClick(
+                    e,
+                    doc._id
+                  )
+                }
+              >
                 <Document
                   file={pdfUrl}
                   onLoadSuccess={(data) =>
@@ -90,9 +161,7 @@ function Dashboard() {
                     );
                   }}
                   loading={
-                    <p>
-                      Loading PDF...
-                    </p>
+                    <p>Loading PDF...</p>
                   }
                 >
                   {Array.from(
@@ -112,6 +181,38 @@ function Dashboard() {
                     )
                   )}
                 </Document>
+
+                {signatures
+                  .filter(
+                    (sig) =>
+                      sig.fileId ===
+                      doc._id
+                  )
+                  .map((sig) => (
+                    <div
+                      key={
+                        sig._id ||
+                        `${sig.x}-${sig.y}`
+                      }
+                      style={{
+                        position:
+                          "absolute",
+                        left: sig.x,
+                        top: sig.y,
+                        border:
+                          "2px dashed blue",
+                        background:
+                          "white",
+                        padding:
+                          "8px 12px",
+                        zIndex: 1000,
+                        fontWeight:
+                          "bold",
+                      }}
+                    >
+                      Sign Here
+                    </div>
+                  ))}
               </div>
             </div>
           );
