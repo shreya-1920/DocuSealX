@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { Document, Page, pdfjs } from "react-pdf";
+
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
+
+// PDF Worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface DocumentData {
   _id: string;
@@ -10,6 +17,9 @@ interface DocumentData {
 
 function Dashboard() {
   const [docs, setDocs] = useState<DocumentData[]>([]);
+  const [numPagesMap, setNumPagesMap] = useState<{
+    [key: string]: number;
+  }>({});
 
   useEffect(() => {
     axios
@@ -21,6 +31,16 @@ function Dashboard() {
         console.log("Error fetching documents:", error);
       });
   }, []);
+
+  const handleLoadSuccess = (
+    docId: string,
+    { numPages }: { numPages: number }
+  ) => {
+    setNumPagesMap((prev) => ({
+      ...prev,
+      [docId]: numPages,
+    }));
+  };
 
   return (
     <div className="p-6">
@@ -39,7 +59,7 @@ function Dashboard() {
           return (
             <div
               key={doc._id}
-              className="border p-4 mb-4 rounded"
+              className="border p-4 mb-6 rounded"
             >
               <h3 className="font-semibold mb-3">
                 {doc.fileName}
@@ -54,14 +74,44 @@ function Dashboard() {
                 Open PDF in New Tab
               </a>
 
-              <div className="mt-4">
-                <iframe
-                  src={pdfUrl}
-                  width="100%"
-                  height={500}
-                  title={doc.fileName}
-                  className="border"
-                />
+              <div className="mt-4 border p-2 overflow-auto">
+                <Document
+                  file={pdfUrl}
+                  onLoadSuccess={(data) =>
+                    handleLoadSuccess(
+                      doc._id,
+                      data
+                    )
+                  }
+                  onLoadError={(error) => {
+                    console.error(
+                      "PDF Error:",
+                      error
+                    );
+                  }}
+                  loading={
+                    <p>
+                      Loading PDF...
+                    </p>
+                  }
+                >
+                  {Array.from(
+                    new Array(
+                      numPagesMap[doc._id] || 0
+                    ),
+                    (_, index) => (
+                      <Page
+                        key={`page_${
+                          index + 1
+                        }`}
+                        pageNumber={
+                          index + 1
+                        }
+                        width={800}
+                      />
+                    )
+                  )}
+                </Document>
               </div>
             </div>
           );

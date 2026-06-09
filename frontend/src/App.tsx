@@ -2,8 +2,8 @@ import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
-    <div>
-      <h1 className="text-5xl font-bold">
+    <div className="p-6">
+      <h1 className="text-5xl font-bold mb-6">
         DocuSealX
       </h1>
 
