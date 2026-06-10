@@ -18,13 +18,17 @@ interface DocumentData {
 interface Signature {
   _id?: string;
   fileId: string;
-  x: number;
-  y: number;
+  xPercent: number;
+  yPercent: number;
 }
 
 function Dashboard() {
   const [docs, setDocs] = useState<DocumentData[]>([]);
   const [signatures, setSignatures] = useState<Signature[]>([]);
+  const [dragging, setDragging] = useState(false);
+  const [selectedSignatureId, setSelectedSignatureId] =
+    useState<string | null>(null);
+
   const [numPagesMap, setNumPagesMap] = useState<{
     [key: string]: number;
   }>({});
@@ -75,22 +79,32 @@ function Dashboard() {
     e: React.MouseEvent<HTMLDivElement>,
     fileId: string
   ) => {
+    // Prevent creating new signatures while dragging
+    if (dragging) return;
+
     const rect =
       e.currentTarget.getBoundingClientRect();
 
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const xPercent =
+  ((e.clientX - rect.left) /
+    rect.width) *
+  100;
+
+const yPercent =
+  ((e.clientY - rect.top) /
+    rect.height) *
+  100;
 
     try {
       const response = await axios.post(
         "http://localhost:5000/api/signatures",
         {
-          fileId,
-          signer: "shivam@gmail.com",
-          x,
-          y,
-          status: "pending",
-        }
+  fileId,
+  signer: "shreya@gmail.com",
+  xPercent,
+  yPercent,
+  status: "pending",
+}
       );
 
       setSignatures((prev) => [
@@ -103,6 +117,77 @@ function Dashboard() {
         error
       );
     }
+  };
+
+  const handleMouseMove = (
+  e: React.MouseEvent<HTMLDivElement>
+) => {
+  if (!dragging || !selectedSignatureId)
+    return;
+
+  const rect =
+    e.currentTarget.getBoundingClientRect();
+
+  const xPercent =
+    ((e.clientX - rect.left) /
+      rect.width) *
+    100;
+
+  const yPercent =
+    ((e.clientY - rect.top) /
+      rect.height) *
+    100;
+
+  setSignatures((prev) =>
+    prev.map((sig) =>
+      sig._id === selectedSignatureId
+        ? {
+            ...sig,
+            xPercent,
+            yPercent,
+          }
+        : sig
+    )
+  );
+};
+   
+
+  const handleMouseUp = async () => {
+    if (!selectedSignatureId) {
+      setDragging(false);
+      return;
+    }
+
+    const signature = signatures.find(
+      (sig) =>
+        sig._id === selectedSignatureId
+    );
+
+    if (!signature) {
+      setDragging(false);
+      setSelectedSignatureId(null);
+      return;
+    }
+
+    try {
+      await axios.put(
+        `http://localhost:5000/api/signatures/${selectedSignatureId}`,
+        {
+  xPercent:
+    signature.xPercent,
+  yPercent:
+    signature.yPercent,
+}
+      );
+    } catch (error) {
+      console.error(
+        "Error updating signature:",
+        error
+      );
+    }
+
+    setDragging(false);
+    setSelectedSignatureId(null);
   };
 
   return (
@@ -145,6 +230,10 @@ function Dashboard() {
                     doc._id
                   )
                 }
+                onMouseMove={
+                  handleMouseMove
+                }
+                onMouseUp={handleMouseUp}
               >
                 <Document
                   file={pdfUrl}
@@ -191,14 +280,26 @@ function Dashboard() {
                   .map((sig) => (
                     <div
                       key={
-                        sig._id ||
-                        `${sig.x}-${sig.y}`
-                      }
+  sig._id ||
+  `${sig.xPercent}-${sig.yPercent}`
+}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+
+                        if (sig._id) {
+                          setDragging(
+                            true
+                          );
+                          setSelectedSignatureId(
+                            sig._id
+                          );
+                        }
+                      }}
                       style={{
                         position:
                           "absolute",
-                        left: sig.x,
-                        top: sig.y,
+                     left: `${sig.xPercent}%`,
+top: `${sig.yPercent}%`,
                         border:
                           "2px dashed blue",
                         background:
@@ -208,6 +309,9 @@ function Dashboard() {
                         zIndex: 1000,
                         fontWeight:
                           "bold",
+                        cursor: "move",
+                        userSelect:
+                          "none",
                       }}
                     >
                       Sign Here

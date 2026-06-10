@@ -13,12 +13,12 @@ const signatureSchema = new mongoose.Schema(
       required: true,
     },
 
-    x: {
+    xPercent: {
       type: Number,
       required: true,
     },
 
-    y: {
+    yPercent: {
       type: Number,
       required: true,
     },

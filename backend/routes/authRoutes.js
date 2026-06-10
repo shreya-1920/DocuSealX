@@ -22,5 +22,24 @@ router.get(
     });
   }
 );
+router.put("/:id", async (req, res) => {
+  try {
+    const signature =
+      await Signature.findByIdAndUpdate(
+        req.params.id,
+        {
+          x: req.body.x,
+          y: req.body.y,
+        },
+        { new: true }
+      );
+
+    res.json(signature);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
 
 module.exports = router;
