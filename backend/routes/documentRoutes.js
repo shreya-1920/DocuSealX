@@ -4,45 +4,54 @@ const router = express.Router();
 const upload = require("../middleware/upload");
 const Document = require("../models/Document");
 
-router.post(
-  "/upload",
-  upload.single("document"),
-  async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({
-          success: false,
-          message: "No file uploaded",
-        });
-      }
-
-      const document = new Document({
-        fileName: req.file.originalname,
-        filePath: req.file.path,
-        fileSize: req.file.size,
-      });
-
-      await document.save();
-
-      res.status(201).json({
-        success: true,
-        message: "File uploaded successfully",
-        document,
-      });
-    } catch (error) {
-      res.status(500).json({
+router.post("/upload", upload.single("document"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
         success: false,
-        message: error.message,
+        message: "No file uploaded",
       });
     }
+
+    const document = new Document({
+      fileName: req.file.originalname,
+      filePath: req.file.path,
+      fileSize: req.file.size,
+    });
+
+    await document.save();
+
+    res.status(201).json({
+      success: true,
+      message: "File uploaded successfully",
+      document,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
-);
+});
 
 router.get("/", async (req, res) => {
   try {
-    const docs = await Document.find();
-
+    const docs = await Document.find().sort({ uploadedAt: -1 });
     res.status(200).json(docs);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  try {
+    await Document.findByIdAndDelete(req.params.id);
+    res.json({
+      success: true,
+      message: "Document deleted successfully",
+    });
   } catch (error) {
     res.status(500).json({
       message: error.message,
