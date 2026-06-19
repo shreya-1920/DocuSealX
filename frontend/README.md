@@ -1,73 +1,170 @@
-# React + TypeScript + Vite
+# DocuSealX
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A Digital Signature Platform built using the MERN Stack that allows users to upload PDF documents, place signature fields, manage signature status, and generate signed PDF documents.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+* User Registration & Login
+* JWT Authentication
+* Upload PDF Documents
+* View Uploaded Documents
+* Place Signature Fields on PDF
+* Drag & Reposition Signature Fields
+* Signature Status Management (Pending, Signed, Rejected)
+* Generate Signed PDF
+* Dashboard Analytics
+* Documents Management Page
+* Audit Logs Page
+* Settings Page
+* Responsive UI
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Frontend
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+* React.js
+* TypeScript
+* Tailwind CSS
+* Axios
+* React Router DOM
+* React PDF
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Backend
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+* Node.js
+* Express.js
+* MongoDB
+* Mongoose
+* JWT Authentication
+* Multer
+* PDF-lib
+
+---
+
+## Project Structure
+
+frontend/
+
+* React + TypeScript
+* Dashboard UI
+* Authentication Pages
+* PDF Viewer
+* Documents Page
+* Audit Logs
+* Settings
+
+backend/
+
+* Express Server
+* MongoDB Database
+* Authentication APIs
+* Document APIs
+* Signature APIs
+* PDF Generation APIs
+
+---
+
+## API Endpoints
+
+### Authentication
+
+POST /api/auth/register
+
+POST /api/auth/login
+
+GET /api/auth/profile
+
+### Documents
+
+POST /api/docs/upload
+
+GET /api/docs
+
+### Signatures
+
+POST /api/signatures
+
+GET /api/signatures/:fileId
+
+PATCH /api/signatures/:id/status
+
+DELETE /api/signatures/:id
+
+### PDF
+
+GET /api/pdf/generate/:id
+
+---
+
+## Installation
+
+### Backend
+
+```bash
+cd backend
+
+npm install
+
+npm start
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Frontend
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+cd frontend
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+npm install
+
+npm run dev
 ```
+
+---
+
+## Environment Variables
+
+Create a .env file inside backend folder.
+
+```env
+PORT=5000
+
+MONGO_URI=your_mongodb_connection_string
+
+JWT_SECRET=your_secret_key
+```
+
+---
+
+## Future Improvements
+
+* Handwritten Signature Pad
+* Multi-user Signing Workflow
+* Email Notifications
+* Cloud Storage Integration
+* Role Based Access Control
+* Document Sharing
+
+---
+
+## Author
+
+Shreya Jain
+
+B.Tech CSE
+
+Full Stack Developer
+
+---
+
+## GitHub Repository
+
+Add your GitHub Repository Link Here
+
+---
+
+## Live Demo
+
+Add your Deployment Link Here
